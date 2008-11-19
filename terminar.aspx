@@ -1,4 +1,4 @@
-<%@ Page Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="terminar.aspx.cs" Inherits="terminar" Title="Untitled Page" %>
+<%@ Page Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="terminar.aspx.cs" Inherits="terminar" Title="Archivos subidos con exito" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
     <div style="text-align: center">
     Sus archivos han sido subidos al servidor.<br />
