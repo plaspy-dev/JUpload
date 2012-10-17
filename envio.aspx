@@ -204,7 +204,7 @@
                                 <asp:TemplateField ItemStyle-CssClass="puntos">
                                     <ItemTemplate>
                                         <span style="background-color: #FFF">
-                                        <%# Eval("name") %>
+                                            <asp:LinkButton CausesValidation="false" runat="server" ID="LArchivo" Text='<%# Eval("name") %>' PostBackUrl='<%# string.Format("~/archivo.aspx?f={0}&t={1}", Eval("name"), Eval("trabajo")) %>'></asp:LinkButton>
                                         </span>
                                     </ItemTemplate>
                                 </asp:TemplateField>
