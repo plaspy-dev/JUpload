@@ -158,7 +158,7 @@
         </tr>
         <tr>
             <td class="bordes" colspan="2">
-                <asp:Label ID="LTitulo" runat="server" AssociatedControlID="TTitulo" Text="Título"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TTitulo" ErrorMessage="Por favor ingrese un título." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                <asp:Label ID="LTitulo" runat="server" AssociatedControlID="TTitulo" Text="Referencia"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TTitulo" ErrorMessage="Por favor ingrese un título." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
                 <br />
                 <asp:TextBox ID="TTitulo" runat="server" Width="99%" CssClass="sinbordes"></asp:TextBox>
             </td>
@@ -221,7 +221,7 @@
         </tr>
         <tr>
             <td class="bordes" colspan="2">
-                <asp:Label AssociatedControlID="TComentarios" runat="server" ID="LComentarios" Text="Comentarios"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TComentarios" ErrorMessage="Por favor ingrese un comentario." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                <asp:Label AssociatedControlID="TComentarios" runat="server" ID="LComentarios" Text="Observaciones"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TComentarios" ErrorMessage="Por favor ingrese un comentario." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
                 <br />
                 <asp:TextBox ID="TComentarios" runat="server" TextMode="MultiLine" Width="99%" CssClass="sinbordes"></asp:TextBox>
             </td>

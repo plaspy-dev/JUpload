@@ -8,7 +8,7 @@ Sitio para intercambiar archivos y consultar su recepción y su revisión. Sirve
 
 ### Esta revisión
 
-**2012-10-17 · Incorporar la página de entrada del portal.** Añade la página inicial con la estructura visual del sitio. Quien abre el portal puede encontrar en una página dedicada el punto de entrada al flujo de entrega.
+**2012-10-19 · Aclarar la entrada y los campos del envío.** Actualiza la bienvenida para explicar cómo entrar al portal y ajusta etiquetas y validadores del formulario de envío. El usuario puede identificar qué datos debe completar para continuar.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A site for exchanging files and checking reception and review status. It helps w
 
 ### This revision
 
-**2012-10-17 · Add the portal's landing page.** Add the landing page with the site's layout. People opening the portal get a dedicated entry page for the submission workflow.
+**2012-10-19 · Clarify sign-in and submission fields.** Update the welcome page with sign-in guidance and edit the submission form labels and validators. Users can identify which fields to fill in before continuing.
 
 ### How to explore the source
 

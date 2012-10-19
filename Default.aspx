@@ -44,7 +44,7 @@
 <TR ALIGN=LEFT VALIGN=TOP>
 	<TD COLSPAN=1 ROWSPAN=1 WIDTH=1 HEIGHT=37></TD>
 	<TD COLSPAN=1 ROWSPAN=8 WIDTH=1216 HEIGHT=136></TD>
-	<TD COLSPAN=2 ROWSPAN=7 WIDTH=1216 HEIGHT=121><a href="ingreso.htm"><img src="imagenes/hex6.jpg" name="T1" alt="hex24.jpg" border=0 height=120 width=179 align=TOP>
+	<TD COLSPAN=2 ROWSPAN=7 WIDTH=1216 HEIGHT=121><a href="https://service.example.invalid"><img src="imagenes/hex6.jpg" name="T1" alt="hex24.jpg" border=0 height=120 width=179 align=TOP>
 </A></TD>
 	<TD COLSPAN=1 ROWSPAN=6 WIDTH=1216 HEIGHT=112></TD>
 	<TD COLSPAN=1 ROWSPAN=6 WIDTH=1216 HEIGHT=112><IMG SRC="imagenes/hex25.gif" HEIGHT=112 WIDTH=5 ALIGN=TOP BORDER=0></TD>
@@ -95,7 +95,9 @@
 <TR ALIGN=LEFT VALIGN=TOP>
 	<TD COLSPAN=1 ROWSPAN=1 WIDTH=1 HEIGHT=131></TD>
 	<TD COLSPAN=1 ROWSPAN=1 WIDTH=1216 HEIGHT=131></TD>
-	<TD WIDTH=1216 HEIGHT=131 COLSPAN=18 ROWSPAN=1 align="center" class="bienvenido">Bienvenidos a nuestra plataforma para el envió de archivos y aprobación de trabajos, por favor para continuar ingrese su usuario y contraseña, si no ha sido asignada comuniquese con nosotros y a través de un correo electrónico le será enviada.</TD>
+	<TD WIDTH=1216 HEIGHT=131 COLSPAN=18 ROWSPAN=1 align="center" class="bienvenido">Bienvenidos a nuestra plataforma para el envió de archivos y aprobación de trabajos.<br />
+        <br />
+                Para continuar ingrese su usuario y contraseña, si no ha sido asignada comuniquese con nosotros y a través de un correo electrónico le será enviada.</TD>
 	<TD COLSPAN=1 ROWSPAN=1 WIDTH=1216 HEIGHT=131></TD>
 </TR>
 
@@ -110,11 +112,11 @@
 	<TD WIDTH=1216 HEIGHT=85 COLSPAN=13 ROWSPAN=1 class="recordar">
     <table border="0" cellpadding="3" cellspacing="0" style="background-color:#0170A5; border: solid #0170A5 10px;">
 	  <tr>
-	    <td class="blanco">usuario: </td>
+	    <td class="blanco">Usuario: </td>
 	    <td><asp:TextBox ID="m_EUsuario" runat="server" CssClass="ingreso"></asp:TextBox></td>
 	    </tr>
 	  <tr>
-	    <td class="blanco">contraseña</td>
+	    <td class="blanco">Contraseña</td>
 	    <td><label for="pass"></label>
 	      <asp:TextBox ID="m_EContrasena" runat="server" TextMode="Password" CssClass="ingreso"></asp:TextBox></td>
 	    </tr>
