@@ -8,7 +8,7 @@ Sitio para intercambiar archivos y consultar su recepción y su revisión. Sirve
 
 ### Esta revisión
 
-**2012-10-19 · Aclarar la entrada y los campos del envío.** Actualiza la bienvenida para explicar cómo entrar al portal y ajusta etiquetas y validadores del formulario de envío. El usuario puede identificar qué datos debe completar para continuar.
+**2012-10-19 · Vincular el nombre del archivo con su detalle.** Cambia la tabla de envíos para usar un enlace en el campo mostrado y ajusta la presentación de sus columnas. El usuario puede abrir un archivo desde el registro donde aparece.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A site for exchanging files and checking reception and review status. It helps w
 
 ### This revision
 
-**2012-10-19 · Clarify sign-in and submission fields.** Update the welcome page with sign-in guidance and edit the submission form labels and validators. Users can identify which fields to fill in before continuing.
+**2012-10-19 · Link each file name to its details.** Use a link for the displayed file field and update the submission table's column layout. Users can open a file from the row where it appears.
 
 ### How to explore the source
 

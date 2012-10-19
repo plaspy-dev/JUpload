@@ -204,12 +204,12 @@
                                 <asp:TemplateField ItemStyle-CssClass="puntos">
                                     <ItemTemplate>
                                         <span style="background-color: #FFF">
-                                            <asp:LinkButton CausesValidation="false" runat="server" ID="LArchivo" Text='<%# Eval("name") %>' PostBackUrl='<%# string.Format("~/archivo.aspx?f={0}&t={1}", Eval("name"), Eval("trabajo")) %>'></asp:LinkButton>
+                                            <a href='<%# string.Format("archivo.aspx?f={0}&t={1}", Eval("name"), Eval("trabajo")) %>'><%# Eval("name") %></a>
                                         </span>
                                     </ItemTemplate>
                                 </asp:TemplateField>
                                 <asp:BoundField HeaderText="Relleno" DataField="" ItemStyle-Width="100px" ItemStyle-CssClass="puntos" />
-                                <asp:BoundField HeaderText="Tamaño" DataField="tamano" ItemStyle-HorizontalAlign="Right" />
+                                <asp:BoundField HeaderText="Tamaño" DataField="tamano" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
                                 <asp:CommandField SelectText="Eliminar" ShowSelectButton="True" ButtonType="Image" SelectImageUrl="~/imagenes/eliminar.gif" />
                             </Columns>
                         </asp:GridView>
