@@ -9,13 +9,15 @@
 <script type="text/javascript" src="upload/jquery.swfupload.js"></script>
 <script type="text/javascript">
 
+    var revision = null;
+
     function bytesToSize(bytes) {
         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
         if (bytes == 0) return '0 Bytes';
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
     };
-    
+
     var hiddenButton = null;
     function obs() {
         var stats = $("#<%= PSWF.ClientID %>").swfupload('getStats');
@@ -46,6 +48,12 @@
         var h = hiddenButton;
         hiddenButton = null;
         return $(h).show();
+    }
+    function onCancelar() {
+        // bCancelarU
+        if(confirm('¿Esta seguro de cancelar este archivo?'))
+            $("#<%= PSWF.ClientID %>").swfupload('cancelUpload');
+        return false;
     }
     $(function() {
 
@@ -78,6 +86,8 @@
 		    // $('#log').append('<li>Loaded</li>');
 		    $(this).swfupload("addPostParam", "u", $.cookie("usuario"));
 		    $(this).swfupload("addPostParam", "p", $.cookie("password"));
+		    if(revision)
+		        $(this).swfupload("addPostParam", "r", revision);
 		})
 		.bind('fileQueued', function(event, file) {
 		    // $('#log').append('<li>File queued - ' + file.name + '</li>');
@@ -115,7 +125,9 @@
 		    // $('#log').append('<li>Upload complete - ' + file.name + '</li>');
 		    // upload has completed, lets try the next one in the queue
 		    // $('#log').html('');
-		    $("#<%= BArchivos.ClientID %>").click();
+		    if (revision)
+		        $("#<%= BArchivosRevision.ClientID %>").click();
+		    else $("#<%= BArchivos.ClientID %>").click();
 		    $(window).unbind('beforeunload');
 		    $("#progressbar").fadeOut();
 		    $("#tprogressbar").hide();
@@ -127,8 +139,6 @@
 		.bind('uploadError', function(event, file, errorCode, message) {
 		    $('#filename').append('<li>Upload error - ' + message + '</li>');
 		});
-        /*var swfu = $.swfupload.getInstance('#<%= PSWF.ClientID %>');
-        swfu.addPostParam("u", "temp");*/
     });	
 </script>
 </asp:Content>
@@ -136,7 +146,16 @@
     <table style="width: 100%;" cellspacing=0>
         <tr>
             <td align="left">
-                <asp:Label runat="server" ID="LUsuario" Font-Bold="True"></asp:Label></td>
+                <asp:Label runat="server" ID="LUsuario" Font-Bold="True"></asp:Label>
+                <asp:DropDownList ID="DUsuarios" runat="server" DataSourceID="SUsuarios" 
+                    DataTextField="nombre" DataValueField="id">
+                </asp:DropDownList>
+                <asp:SqlDataSource ID="SUsuarios" runat="server" 
+                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                    ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                    SelectCommand="SELECT id, nombre FROM usuariosweb WHERE estado IS NULL OR estado=1 ORDER BY nombre">
+                </asp:SqlDataSource>
+            </td>
             <td align="right" valign="top" rowspan="2">
                 <asp:Label ID="LFecha" runat="server"></asp:Label></td>
         </tr>
@@ -148,7 +167,7 @@
         <tr>
             <td colspan="2">&nbsp;</td>
         </tr>
-        <tr>
+        <tr id="tupload">
             <td colspan="2"><asp:Panel runat="server" ID="PSWF">
                     <input type="button" id="bUpload" value="Archivo" class="hide" />
                 </asp:Panel></td>
@@ -163,7 +182,7 @@
                 <asp:TextBox ID="TTitulo" runat="server" Width="99%" CssClass="sinbordes"></asp:TextBox>
             </td>
         </tr>
-        <tr>
+        <tr id="tprogreso">
             <td class="bordes hide" id="tprogressbar" colspan="2">
             <table width="100%" cellspacing=0 cellpadding=0>
                 <tr>
@@ -179,7 +198,7 @@
                 </tr>
                 <tr>
                     <td>&nbsp;</td>
-                    <td colspan="2"><div id="progressbar"></div></td>
+                    <td colspan="2"><table cellpadding=0 cellspacing=0 width="100%"><tr><td width="100%"><div id="progressbar"></div></td><td><input type="button" onclick="return onCancelar();" class="boton" style="background-color: #FF0000;" value="X" id="bCancelarU" /></td></tr></table></td>
                     <td>&nbsp;</td>
                 </tr>
                 <tr>
@@ -241,6 +260,67 @@
             </td>
         </tr>
     </table>
+    <asp:Panel runat="server" ID="PRevisiones">
+        <script type="text/javascript">
+            revision = '<%= HId.Value %>';
+            $(function() {
+                $("#tprogreso").insertBefore($("#tbotones"));
+                $("#tupload").insertBefore($("#tbotones"));
+            });
+        </script>
+        <asp:HiddenField runat="server" ID="HId" />
+        <table style="width: 100%;" cellspacing=0>
+            <tr>
+                <td class="bordes" colspan="2">
+                    <asp:Label ID="LOrden" runat="server" AssociatedControlID="TOrden" Text="Orden de producción"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TOrden" ValidationGroup="revision" ErrorMessage="Por favor ingrese una orden de trabajo." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                    <br />
+                    <asp:TextBox ID="TOrden" runat="server" Width="99%" CssClass="sinbordes"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="bordes" colspan="2">
+                    <asp:Label ID="LComentariosRevision" runat="server" AssociatedControlID="TComentariosRevision" Text="Comentarios"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TComentariosRevision" ValidationGroup="revision" ErrorMessage="Por favor ingrese un comentario." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                    <br />
+                    <asp:TextBox ID="TComentariosRevision" runat="server" Width="99%" TextMode="MultiLine" CssClass="sinbordes"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td class="bordes" colspan="2">
+                    Archivos<br />
+                    <span style="font-weight: normal">
+                    <asp:UpdatePanel runat="server" ID="PArchivosRevision" UpdateMode="Conditional">
+                        <ContentTemplate>
+                            <asp:GridView ID="GArchivosRevision" runat="server" AllowSorting="True" 
+                                AutoGenerateColumns="False" EmptyDataText="No hay archivos" ShowHeader="False" 
+                                DataKeyNames="name" GridLines="None" 
+                                onselectedindexchanged="GArchivosRevision_SelectedIndexChanged" >
+                                <Columns>
+                                    <asp:TemplateField ItemStyle-CssClass="puntos">
+                                        <ItemTemplate>
+                                            <span style="background-color: #FFF">
+                                                <a href='<%# string.Format("archivo.aspx?f={0}&t={1}&r=1", Eval("name"), Eval("trabajo")) %>'><%# Eval("name") %></a>
+                                            </span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:BoundField HeaderText="Relleno" DataField="" ItemStyle-Width="100px" ItemStyle-CssClass="puntos" />
+                                    <asp:BoundField HeaderText="Tamaño" DataField="tamano" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
+                                    <asp:CommandField SelectText="Eliminar" ShowSelectButton="True" ButtonType="Image" SelectImageUrl="~/imagenes/eliminar.gif" />
+                                </Columns>
+                            </asp:GridView>
+                            <asp:Button runat="server" ID="BArchivosRevision" onclick="BArchivosRevision_Click" CssClass="hide" CausesValidation="false" />
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
+                    </span>
+                </td>
+            </tr>
+            <tr id="tbotones">
+                <td align="right" colspan="2">
+                    <asp:Button ID="BAceptarRevision" runat="server" Text="Aceptar" ValidationGroup="revision" onclick="BAceptarRevision_Click" CssClass="boton" />
+                    <asp:Button ID="BCancelarRevision" runat="server" Text="Cancelar" CssClass="boton" CausesValidation="false" onclick="BCancelarRevision_Click" />
+                </td>
+            </tr>
+        </table>
+    </asp:Panel>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="ContentPlaceHolder2" Runat="Server">
     <uc1:historial ID="historial1" runat="server" />
