@@ -19,10 +19,7 @@ public partial class envio : System.Web.UI.Page
         public string name { get; set; }
         public string trabajo { get; set; }
 
-        public Archivo(string nombre, double size)
-        {
-            trabajo = "";
-            name = nombre;
+        public static string GetHumanSize(double size) {
 
             string[] sizes = { "B", "KB", "MB", "GB" };
             int order = 0;
@@ -32,23 +29,21 @@ public partial class envio : System.Web.UI.Page
                 size = size / 1024;
             }
 
-            tamano = String.Format("{0:0.##} {1}", size, sizes[order]);
+            return String.Format("{0:0.##} {1}", size, sizes[order]);
+        }
+
+        public Archivo(string nombre, double size)
+        {
+            trabajo = "";
+            name = nombre;
+            tamano = GetHumanSize(size);
         }
 
         public Archivo(string nombre, double size, string idtrabajo) {
 
             trabajo = idtrabajo;
             name = nombre;
-
-            string[] sizes = { "B", "KB", "MB", "GB" };
-            int order = 0;
-            while (size >= 1024 && order + 1 < sizes.Length)
-            {
-                order++;
-                size = size / 1024;
-            }
-
-            tamano = String.Format("{0:0.##} {1}", size, sizes[order]);
+            tamano = GetHumanSize(size);
         }
     }
 
@@ -65,6 +60,7 @@ public partial class envio : System.Web.UI.Page
             LUsuario.Visible = usuario.GetGrupo() != 1;
             DUsuarios.Visible = usuario.GetGrupo() == 1;
             PRevisiones.Visible = false;
+            PRevisionesH.Visible = false;
 
             if (usuario.GetGrupo() == 1) {
 
@@ -126,6 +122,12 @@ public partial class envio : System.Web.UI.Page
                         DUsuarios.Visible = false;
 
                         BAceptar.Visible = false;
+
+                        GRevisiones.DataBind();
+                        LRevisiones.Text = GRevisiones.Rows.Count + " Revisi";
+                        LRevisiones.Text += GRevisiones.Rows.Count == 1 ? "ón" : "ones";
+                        PRevisionesH.Visible = true;
+                        // PRevisionesH.Visible = GEvoluciones.Rows.Count > 0;
 
                         BArchivosRevision_Click(sender, e);
                         return;
@@ -254,9 +256,82 @@ public partial class envio : System.Web.UI.Page
         else Response.Redirect(Request.Url.AbsolutePath);
     }
 
+    protected bool AddRevision(Query query, string archivo) {
+
+        CConector conector = new CConector();
+
+        if (!string.IsNullOrEmpty(archivo)) {
+            query["nombre"] = System.IO.Path.GetFileName(archivo);
+            query["tamano"] = new FileInfo(archivo).Length.ToString();
+        }
+
+        int res = conector.QueryMod(query.GetInsert());
+        if (res == -1)
+        {
+            LMensaje.Text = conector.GetLastError();
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(archivo))
+        {
+            // movemos los archivos a la posicion definitiva
+            System.IO.File.Move(archivo, 
+                                GetRevisionFinalPath(res.ToString()) + System.IO.Path.GetFileName(archivo));
+        }
+        
+        return true;
+    }
+
+    protected string GetRevisionTempPath() {
+
+        string temppath = "";
+        CConector conector = new CConector();
+        MySqlDataReader reader = conector.Query("SELECT fecha,usuario FROM trabajo WHERE id=" + Query.GetValor(HId.Value));
+        if (reader != null && reader.Read())
+        {
+            DateTime fecha = (DateTime)reader["fecha"];
+            string szUsuario = conector.QueryString("SELECT usuario FROM usuariosweb WHERE id=" + Query.GetValor(reader["usuario"].ToString()));
+            temppath = CUsuario.GetRevisionTempPath(szUsuario, HId.Value, fecha);
+        }
+        return temppath;
+    }
+
+    protected string GetRevisionFinalPath(string idrevision)
+    {
+        string temppath = "";
+        CConector conector = new CConector();
+        MySqlDataReader reader = conector.Query("SELECT fecha,usuario FROM trabajo WHERE id=" + Query.GetValor(HId.Value));
+        if (reader != null && reader.Read())
+        {
+            DateTime fecha = (DateTime)reader["fecha"];
+            string szUsuario = conector.QueryString("SELECT usuario FROM usuariosweb WHERE id=" + Query.GetValor(reader["usuario"].ToString()));
+            temppath = CUsuario.GetFinalRevisionPath(szUsuario, HId.Value, fecha, idrevision);
+        }
+        return temppath;
+    }
+
     protected void BAceptarRevision_Click(object sender, EventArgs e) {
 
         // aqui agregamos la revisión
+        Query query = new Query("revision");
+        bool archivos = false;
+
+        query["trabajo"]=HId.Value;
+        query["fecha"]="SYSDATE()";
+        query["ordendetrabajo"]=TOrden.Text;
+        query["observaciones"]=TComentariosRevision.Text;
+
+        foreach (string archivo in System.IO.Directory.GetFiles(GetRevisionTempPath(), "*.*"))
+        {
+            if (!AddRevision(query, archivo))
+                return;
+            archivos = true;
+        }
+        if (!archivos)
+            if (!AddRevision(query, ""))
+                return;
+
+        BCancelarRevision_Click(sender, e);
     }
 
     protected void BCancelarRevision_Click(object sender, EventArgs e)
@@ -268,18 +343,8 @@ public partial class envio : System.Web.UI.Page
     protected void BArchivosRevision_Click(object sender, EventArgs e)
     {
         List<Archivo> values = new List<Archivo>();
-        
-        string temppath="";
-        CConector conector = new CConector();
-        MySqlDataReader reader = conector.Query("SELECT fecha,usuario FROM trabajo WHERE id=" + Query.GetValor(HId.Value));
-        if (reader != null && reader.Read())
-        {
-            DateTime fecha = (DateTime)reader["fecha"];
-            string szUsuario= conector.QueryString("SELECT usuario FROM usuariosweb WHERE id=" + Query.GetValor(reader["usuario"].ToString()));
-            temppath = CUsuario.GetRevisionTempPath(szUsuario, HId.Value, fecha);
-        }
 
-        foreach (string archivo in System.IO.Directory.GetFiles(temppath, "*.*"))
+        foreach (string archivo in System.IO.Directory.GetFiles(GetRevisionTempPath(), "*.*"))
         {
             FileInfo info = new FileInfo(archivo);
             values.Add(new Archivo(System.IO.Path.GetFileName(archivo), info.Length, HId.Value));
@@ -325,5 +390,16 @@ public partial class envio : System.Web.UI.Page
 
         System.IO.File.Delete(temppath + GArchivosRevision.SelectedValue);
         BArchivosRevision_Click(sender, e);
+    }
+
+    protected void GRevisiones_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowIndex != -1)
+        {
+            try
+            {
+                e.Row.Cells[6].Text = Archivo.GetHumanSize(Convert.ToDouble(e.Row.Cells[6].Text));
+            } catch(Exception ex) {}
+        }
     }
 }

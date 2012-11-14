@@ -3,7 +3,12 @@
 <%@ Register src="historial.ascx" tagname="historial" tagprefix="uc1" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
-
+<style type="text/css">
+.ui-accordion-content 
+{
+    padding: 0px !important;
+}
+</style>
     <script type="text/javascript" src="js/jquery.cookie.js"></script>
     <script type="text/javascript" src="upload/swfupload.js"></script>
 <script type="text/javascript" src="upload/jquery.swfupload.js"></script>
@@ -55,6 +60,23 @@
             $("#<%= PSWF.ClientID %>").swfupload('cancelUpload');
         return false;
     }
+    function iniciopagina() {
+        $("#<%= PRevisionesH.ClientID %>").accordion({
+            autoHeight: false,
+            collapsible: true,
+            active: false
+        }).css("height", "auto");
+        $("#aagregar").click(function() {
+
+            $(this).parent().parent().hide()
+            .parent().find(".revision").show()
+            ;
+            // $(this).parent().parent().parent().find(".revision").show();
+            $("#<%= TOrden.ClientID %>").focus();
+            return false;
+        });
+    }
+    
     $(function() {
 
         $("#<%= BAceptar.ClientID %>").each(function(i) {
@@ -265,26 +287,77 @@
             revision = '<%= HId.Value %>';
             $(function() {
                 $("#tprogreso").insertBefore($("#tbotones"));
-                $("#tupload").insertBefore($("#tbotones"));
+                $("#tupload").insertBefore($("#tbotones")).addClass("hide revision");
             });
         </script>
         <asp:HiddenField runat="server" ID="HId" />
         <table style="width: 100%;" cellspacing=0>
             <tr>
+                <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <asp:Panel ID="PRevisionesH" runat="server">
+                    <h3><a href="#"><asp:Label runat="server" ID="LRevisiones"></asp:Label></a></h3>
+                    <div>
+                        <asp:GridView ID="GRevisiones" runat="server" AutoGenerateColumns="False" 
+                            DataSourceID="SRevisiones" 
+                            EmptyDataText="No se encontraron revisiones" 
+                            onrowdatabound="GRevisiones_RowDataBound" >
+                            <PagerStyle BackColor="#284775" ForeColor="White" HorizontalAlign="Center" CssClass="ui-widget-header"/>
+                            <SelectedRowStyle BackColor="#E2DED6" Font-Bold="True" ForeColor="#333333" />
+                            <HeaderStyle BackColor="#5D7B9D" Font-Bold="True" ForeColor="White" CssClass="ui-widget-header" />
+                            <EditRowStyle BackColor="#999999" />
+                            <AlternatingRowStyle BackColor="White" ForeColor="#284775" />
+                            <Columns>
+                                <asp:BoundField DataField="fecha" HeaderText="Fecha" ItemStyle-Wrap="false" />
+                                <asp:BoundField DataField="ordendetrabajo" HeaderText="Orden" />
+                                <asp:BoundField DataField="observaciones" HeaderText="Observaciones" />
+                                <asp:BoundField DataField="comentarios" HeaderText="Comentarios" />
+                                <asp:BoundField DataField="estado" HeaderText="Estado" />
+                                <asp:TemplateField HeaderText="Archivo">
+                                    <ItemTemplate>
+                                        <span style="background-color: #FFF">
+                                            <a href='<%# string.Format("archivo.aspx?f={0}&t={1}&ri={2}", Eval("nombre"), Eval("trabajo"), Eval("id")) %>'><%# Eval("nombre") %></a>
+                                        </span>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:BoundField DataField="tamano" HeaderText="Tamaño"  ItemStyle-Wrap="false" ItemStyle-HorizontalAlign="Right" />
+                            </Columns>
+                        </asp:GridView>
+                        <asp:SqlDataSource ID="SRevisiones" runat="server" 
+                            ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                            ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                            SelectCommand="SELECT revision.id,revision.fecha,revision.observaciones
+                                        ,CASE revision.estado WHEN 1 THEN 'Aprobado' WHEN 2 THEN 'Rechazado' ELSE 'Sin revisar' END AS estado
+                                        ,revision.ordendetrabajo
+                                        ,revision.nombre,revision.tamano,revision.trabajo,revision.comentarios
+                                        FROM revision
+                                        WHERE revision.trabajo=@trabajo
+                                        ORDER BY revision.fecha DESC;">
+                            <SelectParameters>
+                                <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="trabajo" />
+                            </SelectParameters>
+                        </asp:SqlDataSource>
+                    </div>
+                </asp:Panel>
+                </td>
+            </tr>
+            <tr class="hide revision">
                 <td class="bordes" colspan="2">
                     <asp:Label ID="LOrden" runat="server" AssociatedControlID="TOrden" Text="Orden de producción"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TOrden" ValidationGroup="revision" ErrorMessage="Por favor ingrese una orden de trabajo." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
                     <br />
                     <asp:TextBox ID="TOrden" runat="server" Width="99%" CssClass="sinbordes"></asp:TextBox>
                 </td>
             </tr>
-            <tr>
+            <tr class="hide revision">
                 <td class="bordes" colspan="2">
-                    <asp:Label ID="LComentariosRevision" runat="server" AssociatedControlID="TComentariosRevision" Text="Comentarios"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TComentariosRevision" ValidationGroup="revision" ErrorMessage="Por favor ingrese un comentario." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                    <asp:Label ID="LComentariosRevision" runat="server" AssociatedControlID="TComentariosRevision" Text="Observaciones"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TComentariosRevision" ValidationGroup="revision" ErrorMessage="Por favor ingrese un comentario." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
                     <br />
                     <asp:TextBox ID="TComentariosRevision" runat="server" Width="99%" TextMode="MultiLine" CssClass="sinbordes"></asp:TextBox>
                 </td>
             </tr>
-            <tr>
+            <tr class="hide revision">
                 <td class="bordes" colspan="2">
                     Archivos<br />
                     <span style="font-weight: normal">
@@ -313,10 +386,15 @@
                     </span>
                 </td>
             </tr>
-            <tr id="tbotones">
+            <tr id="tbotones" class="hide revision">
                 <td align="right" colspan="2">
                     <asp:Button ID="BAceptarRevision" runat="server" Text="Aceptar" ValidationGroup="revision" onclick="BAceptarRevision_Click" CssClass="boton" />
                     <asp:Button ID="BCancelarRevision" runat="server" Text="Cancelar" CssClass="boton" CausesValidation="false" onclick="BCancelarRevision_Click" />
+                </td>
+            </tr>
+            <tr>
+                <td align="right" colspan="2" height="28px">
+                    <a href="#" id="aagregar" class="brechazar">Agregar Revisión</a>
                 </td>
             </tr>
         </table>

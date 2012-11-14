@@ -8,7 +8,7 @@ Sitio para intercambiar archivos y consultar su recepción y su revisión. Sirve
 
 ### Esta revisión
 
-**2012-11-13 · Conectar el formulario con el registro de envíos.** Añade el controlador de envío que consulta el grupo del usuario y los datos de sus registros. El formulario puede presentar y procesar información del envío con el contexto de la cuenta.
+**2012-11-14 · Mostrar los tamaños y preparar archivos para revisión.** Amplía la tabla de envíos, presenta tamaños legibles y actualiza el manejo de la carpeta temporal de revisión. Así se puede identificar un archivo y seguir dónde queda mientras espera revisión.
 
 ### Cómo explorar el código
 
@@ -24,7 +24,7 @@ A site for exchanging files and checking reception and review status. It helps w
 
 ### This revision
 
-**2012-11-13 · Connect the form to recorded submissions.** Add the submission handler that reads the user's group and record data. The form can display and process submission information in the context of the account.
+**2012-11-14 · Display file sizes and prepare files for review.** Expand the submissions table, show human-readable sizes, and update handling of the temporary review folder. Users and maintainers can identify a file and follow where it sits during review.
 
 ### How to explore the source
 
