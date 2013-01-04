@@ -98,6 +98,12 @@ public partial class envio : System.Web.UI.Page
                         TComentarios.Text = reader["observaciones"].ToString();
                         LFecha.Text = reader["fecha"].ToString();
 
+                        if (usuario.GetGrupo() == 1)
+                        {
+                            DUsuarios.SelectedValue = reader["usuario"].ToString();
+                            LUsuario.Text = DUsuarios.SelectedItem.Text;
+                        }
+
                         List<Archivo> values = new List<Archivo>();
                         Query queryarchivo = new Query("trabajo_archivo");
                         
@@ -115,8 +121,11 @@ public partial class envio : System.Web.UI.Page
                         GArchivos.DataSource = values;
                         GArchivos.DataBind();
                         if (usuario.GetGrupo() != 1)
+                        {
                             PSWF.Visible = false;
-                        else PRevisiones.Visible = true;
+                            BAceptarRevision.Visible = false;
+                        }
+                        PRevisiones.Visible = true;
 
                         LUsuario.Visible = true;
                         DUsuarios.Visible = false;
@@ -197,10 +206,14 @@ public partial class envio : System.Web.UI.Page
         }
 
         // enviamos el correo al usuario
-        MailMessage msg = new MailMessage(new MailAddress(ConfigurationManager.AppSettings["notifyemail"])
-            , new MailAddress(usuario["email"], usuario.GetNombre()));
-        MailMessage msga = new MailMessage(new MailAddress(usuario["email"], usuario.GetNombre())
-            , new MailAddress(ConfigurationManager.AppSettings["notifyemail"]));
+        MailMessage msg = new MailMessage();
+        msg.From= new MailAddress(CUsuario.GetOnlyOneMail(ConfigurationManager.AppSettings["notifyemail"]));
+        msg.To.Add(usuario["email"].Replace(";", ","));
+
+        MailMessage msga = new MailMessage();
+        
+        msga.From= new MailAddress(CUsuario.GetOnlyOneMail(usuario["email"]), usuario.GetNombre());
+        msga.To.Add(ConfigurationManager.AppSettings["notifyemail"].Replace(";", ","));
 
         // msg.Bcc.Add(new MailAddress("pruebas"));
         msga.IsBodyHtml = msg.IsBodyHtml = true;
@@ -213,21 +226,29 @@ public partial class envio : System.Web.UI.Page
         archivohtml.Close();
 
         msga.Body = msg.Body = ((ingreso)Master).ReplaceContenido(this.Controls, msg.Body);
+        msga.Body = msg.Body = msg.Body.Replace("$Usuario$", usuario.GetNombre());
+        msga.Body = msg.Body = msg.Body.Replace("$szTitulo$", "<a href='" + ConfigurationManager.AppSettings["servidorURL"] + "envio.aspx?id=" + res.ToString() + "'>" + TTitulo.Text + "</a>");
+
         msg.Body = msg.Body.Replace("$GArchivos$", archivos.Replace(",", "<br/>"));
-        msg.Body = msg.Body.Replace("$Usuario$", usuario.GetNombre());
 
         string tablaarchivos = "";
-        final = usuario.GetPrivatePath(res.ToString());
+
+        // final = usuario.GetPrivatePath(res.ToString());
 
         for (int i = 0; i < values.Count; i++)
         {
             string archivo = System.IO.Path.GetFileName(values[i]);
             if (tablaarchivos.Length > 0)
                 tablaarchivos += "<br/>";
-            tablaarchivos += "<a href='" + final + archivo + "'>" + archivo + "</a>";
+
+            tablaarchivos+= string.Format("<a href='{0}archivo.aspx?f={1}&t={2}'>{1}</a>"
+                , ConfigurationManager.AppSettings["servidorURL"]
+                , archivo
+                , res
+            );
+            // tablaarchivos += "<a href='" + final + archivo + "'>" + archivo + "</a>";
         }
         msga.Body = msga.Body.Replace("$GArchivos$", tablaarchivos);
-        msga.Body = msga.Body.Replace("$Usuario$", usuario.GetNombre());
 
         msg.Body = msg.Body.Replace("$szMensaje$", "Este es un mensaje automático informandole que sus archivos fueron recibidos de manera satisfactoría.");
         msga.Body = msga.Body.Replace("$szMensaje$", "Nuevo trabajo recibido en la plataforma.");
@@ -237,12 +258,12 @@ public partial class envio : System.Web.UI.Page
         { // enviamos al cliente
             client.Send(msga);
         }
-        catch (Exception ex) { }
+        catch { }
         try
         {
             client.Send(msg);
         }
-        catch (Exception ex) { }
+        catch  { }
 
         Session["mensaje"] = "Nuevo trabajo: " + TTitulo.Text + " Creado.";
 
@@ -265,7 +286,7 @@ public partial class envio : System.Web.UI.Page
             query["tamano"] = new FileInfo(archivo).Length.ToString();
         }
 
-        int res = conector.QueryMod(query.GetInsert());
+        int res = conector.QueryMod(query.GetInsert(), true);
         if (res == -1)
         {
             LMensaje.Text = conector.GetLastError();
@@ -278,7 +299,51 @@ public partial class envio : System.Web.UI.Page
             System.IO.File.Move(archivo, 
                                 GetRevisionFinalPath(res.ToString()) + System.IO.Path.GetFileName(archivo));
         }
+
+        CUsuario usuario = (CUsuario)Usuario.GetUsuario();
+
+        MySqlDataReader reader= conector.Query("SELECT nombre,email FROM usuariosweb WHERE id=" + (usuario.GetGrupo()==1 ? DUsuarios.SelectedValue : usuario.GetID()));
+        if(reader==null || !reader.Read()) {
+            return false;
+        }
+
+        // enviamos el correo al usuario
+        MailMessage msg = new MailMessage();
         
+        msg.From= new MailAddress(CUsuario.GetOnlyOneMail(ConfigurationManager.AppSettings["notifyemail"]));
+        msg.To.Add(reader["email"].ToString().Replace(";", ","));
+
+        msg.IsBodyHtml = true;
+        msg.Subject = "Revisión: " + TTitulo.Text;
+        msg.ReplyTo = msg.ReplyTo = new MailAddress("demo@example.invalid");
+
+        StreamReader archivohtml = new StreamReader(Server.MapPath("revision.html"));
+        msg.Body = archivohtml.ReadToEnd();
+        archivohtml.Close();
+
+        msg.Body = ((ingreso)Master).ReplaceContenido(this.Controls, msg.Body);
+
+        msg.Body = msg.Body.Replace("$szFecha$", DateTime.Now.ToString());
+        msg.Body = msg.Body.Replace("$GArchivos$"
+            , string.Format("<a href='{0}archivo.aspx?f={1}&t={2}&ri={3}'>{1}</a>"
+            ,ConfigurationManager.AppSettings["servidorURL"]
+            ,System.IO.Path.GetFileName(archivo)
+            ,HId.Value
+            ,res
+            ));
+        msg.Body = msg.Body.Replace("$Usuario$", reader["nombre"].ToString());
+        msg.Body = msg.Body.Replace("$szTrabajo$", "<a href='" + ConfigurationManager.AppSettings["servidorURL"] + "envio.aspx?id=" + HId.Value + "'>" + TTitulo.Text + "</a>");
+
+        msg.Body = msg.Body.Replace("$szMensaje$", "Este es un mensaje automático informandole que se ha solicitado una revisión al trabajo.");
+        
+        // build message contents 
+        SmtpClient client = new SmtpClient();
+        try
+        {
+            client.Send(msg);
+        }
+        catch { }
+
         return true;
     }
 
@@ -331,6 +396,7 @@ public partial class envio : System.Web.UI.Page
             if (!AddRevision(query, ""))
                 return;
 
+        Session["mensaje"] = "Nuevo revisión: " + TOrden.Text + " agregada.";
         BCancelarRevision_Click(sender, e);
     }
 
@@ -399,7 +465,7 @@ public partial class envio : System.Web.UI.Page
             try
             {
                 e.Row.Cells[6].Text = Archivo.GetHumanSize(Convert.ToDouble(e.Row.Cells[6].Text));
-            } catch(Exception ex) {}
+            } catch {}
         }
     }
 }

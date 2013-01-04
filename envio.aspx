@@ -66,15 +66,16 @@
             collapsible: true,
             active: false
         }).css("height", "auto");
-        $("#aagregar").click(function() {
+        if ($("#<%= BAceptarRevision.ClientID %>").length) {
+            $("#aagregar").show().click(function() {
 
-            $(this).parent().parent().hide()
-            .parent().find(".revision").show()
-            ;
-            // $(this).parent().parent().parent().find(".revision").show();
-            $("#<%= TOrden.ClientID %>").focus();
-            return false;
-        });
+                $(this).parent().parent().hide()
+                    .parent().find(".revision").show();
+                // $(this).parent().parent().parent().find(".revision").show();
+                $("#<%= TOrden.ClientID %>").focus();
+                return false;
+            });
+        }
     }
     
     $(function() {
@@ -394,7 +395,7 @@
             </tr>
             <tr>
                 <td align="right" colspan="2" height="28px">
-                    <a href="#" id="aagregar" class="brechazar">Agregar Revisión</a>
+                    <a href="#" id="aagregar" class="brechazar hide">Agregar Revisión</a>
                 </td>
             </tr>
         </table>
