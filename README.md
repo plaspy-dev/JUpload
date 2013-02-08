@@ -8,7 +8,7 @@ Sitio para intercambiar archivos y consultar su recepción y su revisión. Sirve
 
 ### Esta revisión
 
-**2013-01-04 · Añadir la pantalla y el aviso de aprobación.** Incorpora la página de aprobación y modifica el cuerpo y los enlaces del correo que acompaña al envío. La persona que recibe el aviso puede abrir la vista donde se consulta el archivo para revisión.
+**2013-02-08 · Encaminar archivos que requieren revisión.** Distingue cuándo el envío se hace para otra cuenta, copia el archivo a la carpeta temporal de revisión cuando corresponde y ajusta el envío del aviso. Esto separa el archivo pendiente de revisión del flujo directo.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A site for exchanging files and checking reception and review status. It helps w
 
 ### This revision
 
-**2013-01-04 · Add the approval screen and notification.** Add the approval page and update the submission email body and links. The recipient can open the view where the file is available for review.
+**2013-02-08 · Route files that require review.** Determine when a submission targets another account, copy the file to the temporary review location when needed, and update notification handling. This keeps pending-review files separate from direct submissions.
 
 ### How to explore the source
 

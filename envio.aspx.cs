@@ -158,6 +158,10 @@ public partial class envio : System.Web.UI.Page
         CUsuario usuario = (CUsuario)Usuario.GetUsuario();
         string archivos = "";
         List<string> values = new List<string>();
+        bool revision = false;
+        if(usuario.GetGrupo() == 1)
+            revision= DUsuarios.SelectedValue!=usuario.GetID();
+
         foreach (string archivo in System.IO.Directory.GetFiles(usuario.GetTempPath(), "*.*"))
         {
             values.Add(archivo);
@@ -184,6 +188,7 @@ public partial class envio : System.Web.UI.Page
             LMensaje.Text = conector.GetLastError();
             return;
         }
+        HId.Value = res.ToString();
 
         // agregamos los archivos
         Query queryarchivo = new Query("trabajo_archivo");
@@ -202,7 +207,20 @@ public partial class envio : System.Web.UI.Page
         for (int i = 0; i < values.Count; i++)
         {
             string archivo = System.IO.Path.GetFileName(values[i]);
+            if (revision)
+                System.IO.File.Copy(usuario.GetTempPath() + archivo, GetRevisionTempPath() + archivo);
+            
             System.IO.File.Move(usuario.GetTempPath() + archivo, final + archivo);
+
+            // aqui cambiamos los permisos
+            try
+            {
+                System.Diagnostics.Process proc = new System.Diagnostics.Process();
+                proc.EnableRaisingEvents = false;
+                proc.StartInfo.FileName = "chmod";
+                proc.StartInfo.Arguments = " 777 " + final + " -R ";
+                proc.Start();
+            } catch {}
         }
 
         // enviamos el correo al usuario
@@ -253,19 +271,28 @@ public partial class envio : System.Web.UI.Page
         msg.Body = msg.Body.Replace("$szMensaje$", "Este es un mensaje automático informandole que sus archivos fueron recibidos de manera satisfactoría.");
         msga.Body = msga.Body.Replace("$szMensaje$", "Nuevo trabajo recibido en la plataforma.");
         // build message contents 
-        SmtpClient client = new SmtpClient();
-        try
-        { // enviamos al cliente
-            client.Send(msga);
-        }
-        catch { }
-        try
+        if (!revision)
         {
-            client.Send(msg);
+            SmtpClient client = new SmtpClient();
+            try
+            { // enviamos al cliente
+                client.Send(msga);
+            }
+            catch { }
+            try
+            {
+                client.Send(msg);
+            }
+            catch { }
         }
-        catch  { }
 
         Session["mensaje"] = "Nuevo trabajo: " + TTitulo.Text + " Creado.";
+
+        if(revision) {
+            TOrden.Text = "";
+            TComentariosRevision.Text = TComentarios.Text;
+            BAceptarRevision_Click(sender, e);
+        }
 
         BCancelar_Click(sender, e);
     }
@@ -298,6 +325,15 @@ public partial class envio : System.Web.UI.Page
             // movemos los archivos a la posicion definitiva
             System.IO.File.Move(archivo, 
                                 GetRevisionFinalPath(res.ToString()) + System.IO.Path.GetFileName(archivo));
+            try
+            {
+                System.Diagnostics.Process proc = new System.Diagnostics.Process();
+                proc.EnableRaisingEvents = false;
+                proc.StartInfo.FileName = "chmod";
+                proc.StartInfo.Arguments = " 777 " + GetRevisionFinalPath(res.ToString()) + " -R ";
+                proc.Start();
+            }
+            catch { }
         }
 
         CUsuario usuario = (CUsuario)Usuario.GetUsuario();
